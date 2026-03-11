@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.taller.puzle.PuzzleViewModelTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-03-11T17:30:02.573Z" hostname="DESKTOP-1P1L810" time="0.05">
+  <properties/>
+  <testcase name="el puzzle se marca como resuelto cuando el tablero queda en orden" classname="com.taller.puzle.PuzzleViewModelTest" time="0.048"/>
+  <testcase name="el tablero inicial tiene 9 celdas y moveCount es 0" classname="com.taller.puzle.PuzzleViewModelTest" time="0.001"/>
+  <testcase name="mover una ficha adyacente al hueco incrementa moveCount" classname="com.taller.puzle.PuzzleViewModelTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
