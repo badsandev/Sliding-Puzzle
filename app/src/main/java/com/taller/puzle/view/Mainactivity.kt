@@ -1,4 +1,3 @@
-package com.taller.puzle.viewmodel
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -30,6 +29,8 @@ import com.taller.puzle.ui.theme.ColorInPlace
 import com.taller.puzle.ui.theme.ColorNormal
 import com.taller.puzle.ui.theme.ColorResuelto
 
+import kotlin.math.abs
+
 class MainActivity : ComponentActivity() {
 
     private val viewModel: PuzzleViewModel by viewModels()
@@ -60,7 +61,7 @@ fun PuzzleScreen(viewModel: PuzzleViewModel) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "🧩 Puzzle Deslizante",
+                text = " Puzzle Deslizante",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color(0xFFE0E0FF),
@@ -169,7 +170,7 @@ fun PuzzleBoard(
                         val ri = index / 3; val ci = index % 3
                         val re = emptyIndex / 3; val ce = emptyIndex % 3
                         val canMove = !isEmpty &&
-                                (kotlin.math.abs(ri - re) + kotlin.math.abs(ci - ce)) == 1
+                                (abs(ri - re) + abs(ci - ce)) == 1
 
                         PuzzleCell(
                             value = value,
