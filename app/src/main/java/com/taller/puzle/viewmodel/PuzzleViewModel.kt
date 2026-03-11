@@ -1,264 +1,108 @@
-import com.taller.puzle.viewmodel.PuzzleViewModel
+package com.taller.Puzle
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.taller.puzle.ui.theme.ColorCanMove
-import com.taller.puzle.ui.theme.ColorHueco
-import com.taller.puzle.ui.theme.ColorInPlace
-import com.taller.puzle.ui.theme.ColorNormal
-import com.taller.puzle.ui.theme.ColorResuelto
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import com.taller.puzle.model.PuzzleState
 import kotlin.math.abs
 
-class MainActivity : ComponentActivity() {
+class PuzzleViewModel : ViewModel() {
 
-    private val viewModel: PuzzleViewModel by viewModels()
+    private val _state = MutableLiveData<PuzzleState>()
+    val state: LiveData<PuzzleState> = _state
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = Color(0xFF1A1A2E)
-            ) {
-                PuzzleScreen(viewModel)
-            }
-        }
-    }
-}
+    private val solvedBoard = listOf(1, 2, 3, 4, 5, 6, 7, 8, 0)
+    private val cols = 3
 
-@Composable
-fun PuzzleScreen(viewModel: PuzzleViewModel) {
-    val state by viewModel.state.observeAsState()
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = " Puzzle Deslizante",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color(0xFFE0E0FF),
-                modifier = Modifier.padding(top = 16.dp)
-            )
-            Text(
-                text = "Toca una ficha para deslizarla al hueco",
-                fontSize = 14.sp,
-                color = Color(0xFF9090BB),
-                modifier = Modifier.padding(top = 4.dp)
-            )
-        }
-
-        state?.let { s ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFF16213E))
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                StatCard(label = "Movimientos", value = "${s.moveCount}", emoji = "🎯")
-                Divider(
-                    modifier = Modifier.height(40.dp).width(1.dp),
-                    color = Color(0xFF2A2A5A)
-                )
-                StatCard(label = "Meta mínima", value = "${s.minMovesGoal}", emoji = "⭐")
-            }
-        }
-
-        state?.let { s ->
-            PuzzleBoard(
-                board = s.board,
-                isSolved = s.isSolved,
-                onCellClick = { viewModel.onCellClicked(it) }
-            )
-        }
-
-        state?.let { s ->
-            if (s.message.isNotEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFF0F3460))
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = s.message,
-                        color = Color(0xFFFFD700),
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Medium,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            } else {
-                Spacer(modifier = Modifier.height(52.dp))
-            }
-        }
-
-        Button(
-            onClick = { viewModel.startNewGame() },
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF533483))
-        ) {
-            Text(
-                text = "  Nuevo Juego",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-        }
-    }
-}
-
-@Composable
-fun PuzzleBoard(
-    board: List<Int>,
-    isSolved: Boolean,
-    onCellClick: (Int) -> Unit
-) {
-    val emptyIndex = board.indexOf(0)
-
-    Box(
-        modifier = Modifier
-            .aspectRatio(1f)
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(Color(0xFF0F3460))
-            .padding(12.dp)
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            for (row in 0 until 3) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    for (col in 0 until 3) {
-                        val index = row * 3 + col
-                        val value = board[index]
-                        val isEmpty = value == 0
-                        val isInPlace = !isEmpty && value == index + 1
-                        val ri = index / 3; val ci = index % 3
-                        val re = emptyIndex / 3; val ce = emptyIndex % 3
-                        val canMove = !isEmpty &&
-                                (abs(ri - re) + abs(ci - ce)) == 1
-
-                        PuzzleCell(
-                            value = value,
-                            isEmpty = isEmpty,
-                            isInPlace = isInPlace && !isSolved,
-                            canMove = canMove && !isSolved,
-                            isSolved = isSolved,
-                            modifier = Modifier.weight(1f),
-                            onClick = { onCellClick(index) }
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun PuzzleCell(
-    value: Int,
-    isEmpty: Boolean,
-    isInPlace: Boolean,
-    canMove: Boolean,
-    isSolved: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    val targetColor = when {
-        isEmpty   -> Color(0xFF0A0A1A)
-        isSolved  -> ColorResuelto
-        isInPlace -> ColorInPlace
-        canMove   -> ColorCanMove
-        else      -> ColorNormal
+    init {
+        startNewGame()
     }
 
-    val bgColor by animateColorAsState(
-        targetValue = targetColor,
-        animationSpec = tween(durationMillis = 180),
-        label = "cellColor"
-    )
-
-    val borderColor = when {
-        isEmpty   -> ColorHueco
-        isSolved  -> ColorResuelto
-        canMove   -> ColorCanMove
-        isInPlace -> ColorInPlace
-        else      -> ColorNormal
-    }
-
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier
-            .aspectRatio(1f)
-            .shadow(if (canMove) 6.dp else 2.dp, RoundedCornerShape(12.dp))
-            .clip(RoundedCornerShape(12.dp))
-            .background(bgColor)
-            .border(
-                width = if (canMove) 2.dp else 1.dp,
-                color = borderColor,
-                shape = RoundedCornerShape(12.dp)
-            )
-            .clickable(enabled = canMove) { onClick() }
-    ) {
-        if (!isEmpty) {
-            Text(
-                text = "$value",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color(0xFFE8EAF6),
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
-
-@Composable
-fun StatCard(label: String, value: String, emoji: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = emoji, fontSize = 20.sp)
-        Text(
-            text = value,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = Color(0xFFE0E0FF)
+    fun startNewGame() {
+        val shuffled = generateSolvableBoard()
+        val minMoves = estimateMinMoves(shuffled)
+        _state.value = PuzzleState(
+            board = shuffled,
+            moveCount = 0,
+            minMovesGoal = minMoves,
+            isSolved = false,
+            message = ""
         )
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            color = Color(0xFF8080BB)
-        )
+    }
+
+    fun onCellClicked(index: Int) {
+        val current = _state.value ?: return
+        if (current.isSolved) return
+
+        val board = current.board.toMutableList()
+        val clickedValue = board[index]
+
+        // No se puede tocar el hueco
+        if (clickedValue == 0) return
+
+        val emptyIndex = board.indexOf(0)
+
+        // Solo se mueve si la ficha es adyacente al hueco
+        if (areAdjacent(index, emptyIndex)) {
+            board[emptyIndex] = clickedValue
+            board[index] = 0
+
+            val newMoves = current.moveCount + 1
+            val solved = board == solvedBoard
+            val message = if (solved) buildVictoryMessage(newMoves, current.minMovesGoal) else ""
+
+            _state.value = current.copy(
+                board = board,
+                moveCount = newMoves,
+                isSolved = solved,
+                message = message
+            )
+        }
+    }
+
+    private fun areAdjacent(i: Int, j: Int): Boolean {
+        val ri = i / cols; val ci = i % cols
+        val rj = j / cols; val cj = j % cols
+        return (abs(ri - rj) + abs(ci - cj)) == 1
+    }
+
+    private fun generateSolvableBoard(): List<Int> {
+        var board: List<Int>
+        do {
+            board = (0..8).shuffled()
+        } while (!isSolvable(board) || board == solvedBoard)
+        return board
+    }
+
+    private fun isSolvable(board: List<Int>): Boolean {
+        val filtered = board.filter { it != 0 }
+        var inversions = 0
+        for (i in filtered.indices) {
+            for (j in i + 1 until filtered.size) {
+                if (filtered[i] > filtered[j]) inversions++
+            }
+        }
+        return inversions % 2 == 0
+    }
+
+    private fun estimateMinMoves(board: List<Int>): Int {
+        var total = 0
+        for (i in board.indices) {
+            val value = board[i]
+            if (value == 0) continue
+            val targetIndex = value - 1
+            val currentRow = i / cols;          val currentCol = i % cols
+            val targetRow = targetIndex / cols; val targetCol = targetIndex % cols
+            total += abs(currentRow - targetRow) + abs(currentCol - targetCol)
+        }
+        return maxOf(4, total)
+    }
+
+    private fun buildVictoryMessage(moves: Int, goal: Int): String {
+        return when {
+            moves <= goal     -> " ¡Increíble! Igualaste la meta mínima ($goal movimientos)."
+            moves <= goal + 3 -> " ¡Muy bien! Estuviste cerca de la meta ($goal movimientos)."
+            else              -> " ¡Resuelto! Superaste la meta. Intenta en menos de $goal movimientos."
+        }
     }
 }
