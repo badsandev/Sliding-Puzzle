@@ -1,5 +1,4 @@
-
-package com.taller.puzle
+package com.taller.puzle.viewmodel
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -61,7 +60,7 @@ fun PuzzleScreen(viewModel: PuzzleViewModel) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = " Puzzle Deslizante",
+                text = "🧩 Puzzle Deslizante",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color(0xFFE0E0FF),
@@ -84,12 +83,12 @@ fun PuzzleScreen(viewModel: PuzzleViewModel) {
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                StatCard(label = "Movimientos", value = "${s.moveCount}", emoji = "")
+                StatCard(label = "Movimientos", value = "${s.moveCount}", emoji = "🎯")
                 Divider(
                     modifier = Modifier.height(40.dp).width(1.dp),
                     color = Color(0xFF2A2A5A)
                 )
-                StatCard(label = "Meta mínima", value = "${s.minMovesGoal}", emoji = "")
+                StatCard(label = "Meta mínima", value = "${s.minMovesGoal}", emoji = "⭐")
             }
         }
 
@@ -131,7 +130,7 @@ fun PuzzleScreen(viewModel: PuzzleViewModel) {
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF533483))
         ) {
             Text(
-                text = " Nuevo Juego",
+                text = "  Nuevo Juego",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
