@@ -140,4 +140,126 @@ fun PuzzleScreen(viewModel: PuzzleViewModel) {
     }
 }
 
-5 KB
+@Composable
+fun PuzzleBoard(
+    board: List<Int>,
+    isSolved: Boolean,
+    onCellClick: (Int) -> Unit
+) {
+    val emptyIndex = board.indexOf(0)
+
+    Box(
+        modifier = Modifier
+            .aspectRatio(1f)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(Color(0xFF0F3460))
+            .padding(12.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            for (row in 0 until 3) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    for (col in 0 until 3) {
+                        val index = row * 3 + col
+                        val value = board[index]
+                        val isEmpty = value == 0
+                        val isInPlace = !isEmpty && value == index + 1
+                        val ri = index / 3; val ci = index % 3
+                        val re = emptyIndex / 3; val ce = emptyIndex % 3
+                        val canMove = !isEmpty &&
+                                (kotlin.math.abs(ri - re) + kotlin.math.abs(ci - ce)) == 1
+
+                        PuzzleCell(
+                            value = value,
+                            isEmpty = isEmpty,
+                            isInPlace = isInPlace && !isSolved,
+                            canMove = canMove && !isSolved,
+                            isSolved = isSolved,
+                            modifier = Modifier.weight(1f),
+                            onClick = { onCellClick(index) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PuzzleCell(
+    value: Int,
+    isEmpty: Boolean,
+    isInPlace: Boolean,
+    canMove: Boolean,
+    isSolved: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    val targetColor = when {
+        isEmpty   -> Color(0xFF0A0A1A)
+        isSolved  -> ColorResuelto
+        isInPlace -> ColorInPlace
+        canMove   -> ColorCanMove
+        else      -> ColorNormal
+    }
+
+    val bgColor by animateColorAsState(
+        targetValue = targetColor,
+        animationSpec = tween(durationMillis = 180),
+        label = "cellColor"
+    )
+
+    val borderColor = when {
+        isEmpty   -> ColorHueco
+        isSolved  -> ColorResuelto
+        canMove   -> ColorCanMove
+        isInPlace -> ColorInPlace
+        else      -> ColorNormal
+    }
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .aspectRatio(1f)
+            .shadow(if (canMove) 6.dp else 2.dp, RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(12.dp))
+            .background(bgColor)
+            .border(
+                width = if (canMove) 2.dp else 1.dp,
+                color = borderColor,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .clickable(enabled = canMove) { onClick() }
+    ) {
+        if (!isEmpty) {
+            Text(
+                text = "$value",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color(0xFFE8EAF6),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+fun StatCard(label: String, value: String, emoji: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = emoji, fontSize = 20.sp)
+        Text(
+            text = value,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = Color(0xFFE0E0FF)
+        )
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            color = Color(0xFF8080BB)
+        )
+    }
+}
